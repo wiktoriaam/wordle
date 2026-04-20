@@ -12,9 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.wordle.model.LetterState
 import com.example.wordle.model.Settings
-import com.example.wordle.ui.theme.WordleDarkGray
 import com.example.wordle.ui.theme.WordleGreen
 import com.example.wordle.ui.theme.WordleLightGray
 import com.example.wordle.ui.theme.WordleTheme

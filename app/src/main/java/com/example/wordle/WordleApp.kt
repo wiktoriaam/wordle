@@ -14,15 +14,8 @@ import com.example.wordle.ui.GameScreen
 import com.example.wordle.ui.MainScreen
 import com.example.wordle.ui.ProfileScreen
 import com.example.wordle.viewmodel.GameViewModel
-import java.net.URLEncoder
 
-enum class WordleScreen(){
-    Menu,
-    Mode,
-    Game,
-    End,
-    Profile
-}
+
 
 @Composable
 fun WordleApp(
