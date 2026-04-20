@@ -3,16 +3,18 @@ package com.example.wordle
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.wordle.model.GameStatus
+import androidx.navigation.navArgument
 import com.example.wordle.ui.EndScreen
 import com.example.wordle.ui.GameModeScreen
 import com.example.wordle.ui.GameScreen
 import com.example.wordle.ui.MainScreen
 import com.example.wordle.ui.ProfileScreen
 import com.example.wordle.viewmodel.GameViewModel
+import java.net.URLEncoder
 
 enum class WordleScreen(){
     Menu,
@@ -21,44 +23,56 @@ enum class WordleScreen(){
     End,
     Profile
 }
+
 @Composable
 fun WordleApp(
     navController: NavHostController = rememberNavController()
 ){
     NavHost(
         navController = navController,
-        startDestination = WordleScreen.Menu.name
+        startDestination = "menu"
     ){
-        composable(route = WordleScreen.Menu.name){
+        composable(route = "menu"){
             MainScreen(
                 onGameModeClick = {
-                    navController.navigate(WordleScreen.Mode.name)
+                    navController.navigate("mode")
                 },
                 onProfileClick = {
-                    navController.navigate(WordleScreen.Profile.name)
+                    navController.navigate("profile")
                 }
             )
         }
-        composable(route = WordleScreen.Mode.name){
+        composable(route = "mode"){
             GameModeScreen(
                 onSingleplayerClick = {
-                    navController.navigate(WordleScreen.Game.name)
+                    navController.navigate("game")
                 },
                 onMultiplayerClick = {
-                    navController.navigate(WordleScreen.Game.name)
+                    navController.navigate("game")
                 }
             )
         }
-        composable(route = WordleScreen.Game.name){
+        composable(route = "game"){
             val viewModel: GameViewModel = viewModel()
-            GameScreen(viewModel)
+            GameScreen(viewModel, navController)
         }
-        composable(route = WordleScreen.End.name){
+        composable(route = "end/{secretWord}/{result}",
+            arguments = listOf(navArgument("secretWord") {type = NavType.StringType},
+            navArgument("result") {type = NavType.BoolType})){
+            backStackEntry -> val secretWord = backStackEntry.arguments?.getString("secretWord")
+            val result = backStackEntry.arguments?.getBoolean("result")
+
             EndScreen(
-                gameStatus = GameStatus.WIN
-            )
+                gameResult = result == true,
+                secretWord = secretWord,
+                onBackToMenu = {
+                    navController.navigate("menu")
+                },
+                onPlayAgain = {
+                    navController.navigate("game")
+                })
         }
-        composable(route = WordleScreen.Profile.name){
+        composable(route = "profile"){
             ProfileScreen()
         }
     }

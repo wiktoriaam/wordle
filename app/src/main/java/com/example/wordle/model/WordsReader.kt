@@ -1,6 +1,5 @@
 package com.example.wordle.model
 
-import java.io.File
 
 object WordsReader{
     private var wordList: List<String> ?= null

@@ -1,7 +1,6 @@
 package com.example.wordle.model
 
-import androidx.compose.ui.graphics.Color
-import com.example.wordle.ui.theme.WordleLightGray
+
 import kotlin.random.Random
 
 
@@ -79,8 +78,7 @@ class WordleGame (
 
         return gameState.guesses[gameState.guessCount-1]
     }
-
-    fun getGuessNr(): Int {
-        return gameState.guessCount
+    fun revealWord(): String{
+        return gameState.secretWord
     }
 }
