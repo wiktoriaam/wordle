@@ -1,7 +1,14 @@
 package com.example.wordle.viewmodel
 
+import android.app.Application
+import android.util.Log
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.wordle.data.local.AppDatabase
+import com.example.wordle.data.local.entities.GameDetails
+import com.example.wordle.data.local.entities.GameRecord
 import com.example.wordle.model.LetterState
 import com.example.wordle.model.Settings
 import com.example.wordle.model.WordleGame
@@ -9,11 +16,22 @@ import com.example.wordle.ui.theme.WordleDarkGray
 import com.example.wordle.ui.theme.WordleGreen
 import com.example.wordle.ui.theme.WordleLightGray
 import com.example.wordle.ui.theme.WordleYellow
+import com.example.wordle.utils.AudioManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+
 class GameViewModel(
-    val wordleGame: WordleGame = WordleGame()
-) : ViewModel(){
+    application: Application
+) : AndroidViewModel(application){
+    // wordleGame and database objects
+    private val wordleGame: WordleGame = WordleGame()
+    private val db = AppDatabase.getInstance(application)
+    private val dao = db.gameHistoryDao()
+
+    /*
+    variables to store the state of current game not available in wordleGame, typical for viewModel
+    */
     var currentWord: String = ""
     private var currentIndex = 0
     private var currentGuess = 0
@@ -26,6 +44,9 @@ class GameViewModel(
     private var _gameFinished = MutableStateFlow(false)
     private var _gameResult = MutableStateFlow(false)
 
+    /*
+    * variables to be observed by GameScreen
+    */
     val letterColors: StateFlow<Map<Char, Color>> = _letterColors
     val inputBoxColors: StateFlow<List<List<Pair<Char,Color>>>> = _inputBoxColors
     val errorMessage: StateFlow<String> = _errorMessage
@@ -34,8 +55,11 @@ class GameViewModel(
     val gameFinished: StateFlow<Boolean>  = _gameFinished
     val gameResult: StateFlow<Boolean> = _gameResult
 
+
     fun onEnterClick(){
         if(_gameFinished.value)return
+
+        AudioManager.playClickSound()
 
         if(currentIndex < Settings.WORD_LENGTH){
             _errorMessage.value = "Word is too short!"
@@ -60,15 +84,17 @@ class GameViewModel(
                     val newLetterColors = _letterColors.value.toMutableMap().apply { this[currentWord[idx]] = newColor }
                     _letterColors.value = newLetterColors
                 }
-                else if(_letterColors.value[currentWord[idx]] != WordleGreen){
-                    val newLetterColors = _letterColors.value.toMutableMap().apply { this[currentWord[idx]] = newColor }
+                else if(_letterColors.value[currentWord[idx]] != WordleGreen) {
+                    val newLetterColors = _letterColors.value.toMutableMap()
+                        .apply { this[currentWord[idx]] = newColor }
                     _letterColors.value = newLetterColors
                 }
-                if(wordleGame.isGameWon() || wordleGame.isGameOver()){
-                    if(wordleGame.isGameWon())_gameResult.value = true
-                    _secretWord.value = wordleGame.revealWord()
-                    _gameFinished.value = true
-                }
+            }
+            if(wordleGame.isGameWon() || wordleGame.isGameOver()){
+                _secretWord.value = wordleGame.revealWord()
+                insertGame(currentGuess+1, wordleGame.isGameWon(), _secretWord.value!!)
+                if(wordleGame.isGameWon())_gameResult.value = true
+                _gameFinished.value = true
             }
             currentGuess += 1
             currentIndex = 0
@@ -79,6 +105,7 @@ class GameViewModel(
 
 
     fun onBackSpaceClick(){
+        AudioManager.playClickSound()
         _errorMessage.value = ""
         if(_gameFinished.value || currentIndex == 0)return
         currentWord = currentWord.dropLast(1)
@@ -91,6 +118,7 @@ class GameViewModel(
     fun onKeyClick(
         c: Char
     ){
+        AudioManager.playClickSound()
         _errorMessage.value = ""
         if(_gameFinished.value || currentIndex >= Settings.WORD_LENGTH)return
         currentWord += c
@@ -100,6 +128,35 @@ class GameViewModel(
         currentIndex += 1
     }
 
-
+    fun insertGame(
+        guessNr: Int,
+        gameResult: Boolean,
+        secretWord: String
+    ){
+        viewModelScope.launch{
+            val gameHistory = GameRecord(
+                tries = guessNr,
+                secretWord = secretWord,
+                gameResult = gameResult,
+                multiplayer = false
+            )
+            val gameId = dao.insertGame(gameHistory)
+            for (i in 1..guessNr){
+                val gameDetail = GameDetails(
+                    gameId = gameId,
+                    guessedWord = _inputBoxColors.value[i-1].map{pair -> pair.first}.joinToString(""),
+                    status = _inputBoxColors.value[i-1].map{pair -> when(pair.second){
+                        WordleGreen -> 0
+                        WordleDarkGray -> 1
+                        WordleLightGray -> 2
+                        WordleYellow -> 3
+                        else -> 2
+                    }.toString()}.joinToString(""),
+                    order = i
+                )
+                dao.insertGameDetails(gameDetail)
+            }
+        }
+    }
 
 }

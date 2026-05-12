@@ -17,13 +17,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.wordle.ui.components.InputBoard
 import com.example.wordle.ui.components.Keyboard
 import com.example.wordle.viewmodel.GameViewModel
 
 @Composable
-fun GameScreen(viewModel: GameViewModel,
+fun GameScreen(viewModel: GameViewModel = viewModel(),
                navController: NavController){
     val letterColors by viewModel.letterColors.collectAsState()
     val inputBoxColors by viewModel.inputBoxColors.collectAsState()

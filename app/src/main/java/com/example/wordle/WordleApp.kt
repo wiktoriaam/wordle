@@ -12,7 +12,11 @@ import com.example.wordle.ui.EndScreen
 import com.example.wordle.ui.GameModeScreen
 import com.example.wordle.ui.GameScreen
 import com.example.wordle.ui.MainScreen
-import com.example.wordle.ui.ProfileScreen
+import com.example.wordle.ui.GameHistoryScreen
+import com.example.wordle.ui.GameDetailsScreen
+import com.example.wordle.ui.SettingsScreen
+import com.example.wordle.utils.AudioManager
+import com.example.wordle.viewmodel.GameDetailsViewModel
 import com.example.wordle.viewmodel.GameViewModel
 
 
@@ -28,26 +32,33 @@ fun WordleApp(
         composable(route = "menu"){
             MainScreen(
                 onGameModeClick = {
+                    AudioManager.playClickSound()
                     navController.navigate("mode")
                 },
                 onProfileClick = {
-                    navController.navigate("profile")
+                    AudioManager.playClickSound()
+                    navController.navigate("gameHistory")
+                },
+                onSettingsClick = {
+                    AudioManager.playClickSound()
+                    navController.navigate("settings")
                 }
             )
         }
         composable(route = "mode"){
             GameModeScreen(
                 onSingleplayerClick = {
+                    AudioManager.playClickSound()
                     navController.navigate("game")
                 },
                 onMultiplayerClick = {
+                    AudioManager.playClickSound()
                     navController.navigate("game")
                 }
             )
         }
         composable(route = "game"){
-            val viewModel: GameViewModel = viewModel()
-            GameScreen(viewModel, navController)
+            GameScreen(navController = navController)
         }
         composable(route = "end/{secretWord}/{result}",
             arguments = listOf(navArgument("secretWord") {type = NavType.StringType},
@@ -59,14 +70,28 @@ fun WordleApp(
                 gameResult = result == true,
                 secretWord = secretWord,
                 onBackToMenu = {
+                    AudioManager.stopAll()
+                    AudioManager.playClickSound()
                     navController.navigate("menu")
                 },
                 onPlayAgain = {
+                    AudioManager.playClickSound()
                     navController.navigate("game")
                 })
         }
-        composable(route = "profile"){
-            ProfileScreen()
+        composable(route = "gameHistory"){
+            GameHistoryScreen(navController = navController)
+        }
+
+        composable(route = "gameDetails/{gameId}",
+            arguments = listOf(
+                navArgument("gameId") { type = NavType.LongType }
+            )){
+            GameDetailsScreen(navController = navController)
+        }
+
+        composable(route = "settings"){
+            SettingsScreen(navController)
         }
     }
 }
