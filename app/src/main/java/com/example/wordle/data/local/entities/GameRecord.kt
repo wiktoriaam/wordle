@@ -7,7 +7,10 @@ import androidx.room.PrimaryKey
 data class GameRecord(
     @PrimaryKey(autoGenerate = true) val gameId: Long = 0,
     val gameResult: Boolean,
+    val guessed: Boolean,
     val secretWord: String,
     val tries: Int,
-    val multiplayer: Boolean
+    val multiplayer: Boolean,
+    val opponentTries: Int,
+    val opponentGuessed: Boolean
 )

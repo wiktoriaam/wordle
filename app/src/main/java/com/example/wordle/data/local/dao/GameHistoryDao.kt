@@ -29,7 +29,6 @@ interface GameHistoryDao {
     suspend fun deleteGameRecord()
 
 
-
     @Insert
     suspend fun insertGame(game: GameRecord): Long
 

@@ -10,15 +10,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import com.example.wordle.ui.components.GameResult
 import com.example.wordle.utils.AudioManager
+import com.example.wordle.viewmodel.EndViewModel
 
 @Composable
 fun EndScreen(
     gameResult: Boolean,
     secretWord: String?,
-    onBackToMenu: () -> Unit,
-    onPlayAgain: () -> Unit
+    multiplayer: Boolean,
+    opponentState: Int?,
+    opponentRound: Int?,
+    navController: NavController,
+    viewModel: EndViewModel
 ){
     LaunchedEffect(Unit) {
         AudioManager.playEndSound(gameResult)
@@ -36,14 +41,23 @@ fun EndScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
-                onClick = onBackToMenu
+                onClick = {
+                    viewModel.btManager.disconnect()
+                    viewModel.btManager.onNewGame()
+                    navController.navigate("menu")
+                }
             ) {
                 Text(text = "Go back to MENU page")
             }
-            Button(
-                onClick = onPlayAgain
-            ) {
-                Text(text = "Play again")
+            if(!multiplayer) {
+                Button(
+                    onClick = {
+                        viewModel.btManager.onNewGame()
+                        navController.navigate("game")
+                    }
+                ) {
+                    Text(text = "Play again")
+                }
             }
         }
     }

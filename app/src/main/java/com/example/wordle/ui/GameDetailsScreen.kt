@@ -42,7 +42,15 @@ fun GameDetailsScreen(
         val gameRecord by viewModel.gameRecord.collectAsStateWithLifecycle(initialValue = emptyList())
         for (game in gameRecord) {
             if (!game.gameResult) {
+                Text("LOST")
                 WordBox(game.secretWord.map { letter -> letter to WordleGreen })
+            }
+            else{
+                Text("WON")
+            }
+            if(game.multiplayer){
+                val extraInfo = if(game.opponentGuessed) "guessed in ${game.opponentTries} tries!" else "Didn't guess!"
+                Text("Opponent result: $extraInfo")
             }
         }
         Button(

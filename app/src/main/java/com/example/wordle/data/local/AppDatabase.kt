@@ -9,7 +9,7 @@ import com.example.wordle.data.local.entities.GameDetails
 import com.example.wordle.data.local.entities.GameRecord
 
 
-@Database(entities = [GameRecord::class, GameDetails::class], version = 2)
+@Database(entities = [GameRecord::class, GameDetails::class], version = 3)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun gameHistoryDao(): GameHistoryDao
 
