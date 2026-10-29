@@ -30,7 +30,7 @@ object AudioManager {
 
         soundPool?.let { pool ->
             soundMap["click"] = pool.load(context, R.raw.click, 1)
-            soundMap["win"] = pool.load(context, R.raw.victory, 1)
+            soundMap["win"] = pool.load(context, R.raw.win, 1)
             soundMap["error"] = pool.load(context, R.raw.error, 1)
         }
     }
